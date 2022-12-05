@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Об авторе проекта{% endblock %}
+{% load static %}
+{% block content %}
+  <h1 style="padding-top:25px;padding-left:25px;">
+    Привет, я Лев Толстой
+  </h1>
+  <div class="container">
+    <div class="row">
+      <div class="col-2">
+        <a class="navbar-brand" >
+          <img src="{% static 'img/1.jpg' %}" width="150"
+            height="150" class="d-inline-block align-top" alt=""
+            style="border:1px solid black;
+             box-shadow:10px 5px 5px #2F4F4F;margin-bottom:20px;">
+        </a>
+      </div>
+      <div class="col-sm" style="padding-top:45px;">
+        Этот проект результат моего обучения в 
+        <a href = "https://practicum.yandex.ru"/>Яндекс.Практикуме.</a> 
+        <p>
+          А на фото Лев Толстой, вдохновивший меня на его присутствие в этом блоке.
+        </p>
+      </div>
+    </div>
+  </div>    
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Технологии{% endblock %}
+{% load static %}
+{% block content %}
+  <div class="row" style="padding:20px;margin-left:12em;">
+    <h1>Вот что я умею:</h1>
+    <aside class="col-12 col-md-3" 
+      style="padding-top:25px;padding-right:25px;
+      border:1px solid #20B2AA;border-radius:15%;
+      box-shadow:10px 5px 5px #2F4F4F">
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item">
+          <img src="{% static 'img/2.png' %}" width="50"
+            height="28" class="d-inline-block align-top" alt="">
+          Python
+        </li>
+        <li class="list-group-item">
+          <img src="{% static 'img/3.jpg' %}" width="40"
+            height="40" class="d-inline-block align-top" alt="">
+          Django
+        </li>
+        <li class="list-group-item">
+          <img src="{% static 'img/4.webp' %}" width="40"
+            height="30" class="d-inline-block align-top" alt="">
+          HTML
+        </li>
+        <li class="list-group-item">
+          <img src="{% static 'img/5.png' %}" width="30"
+            height="40" class="d-inline-block align-top" alt=""
+            style="margin-right:10px;">
+          CSS
+        </li>
+      </ul>
+    </aside>
+    <article class="col-12 col-md-9" style="padding-left:55px;">
+      <h2>А теперь, несколько слов о Льве Толстом</h2>
+      <p>Поразительный набор характеристик. Есть к чему стремиться!</p>
+      <ol class="list-group list-group-flush">
+        <li class="list-group-item">
+          1. Он был родственником не только Пушкина, но и, возможно, Чингисхана
+        </li>
+        <li class="list-group-item">
+          2. Был лентяем и не хотел учиться, зато много играл в карты
+        </li>
+        <li class="list-group-item">
+          3. Он жутко боялся смерти
+        </li>
+        <li class="list-group-item">
+          4. Он, кажется, впал в маразм на склоне лет. Или его жена свихнулась.
+        </li>
+      </ol>
+    </article>
+  </div>
+{% endblock %}
