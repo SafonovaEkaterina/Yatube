@@ -7,7 +7,6 @@ from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
-
 from posts.forms import PostForm
 from posts.models import Comment, Group, Post
 
@@ -96,27 +95,27 @@ class PostCreateFormTests(TestCase):
         )
         context = {
             'text': 'Новый тестовый пост изменен',
-            'group': new_group.id
+            'group': new_group.id,
         }
         response = self.authorized_user.post(
             reverse(
                 'posts:post_edit', kwargs={'post_id': self.post.id}
             ),
             data=context,
-            follow=True
+            follow=True,
         )
         self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertRedirects(
-            response,
-            reverse('posts:post_detail', kwargs={'post_id': self.post.id})
-        )
         self.assertEqual(Post.objects.count(), posts_count)
         self.assertTrue(
             Post.objects.filter(
                 text=context['text'],
                 group=context['group'],
-                author=self.user
+                author=self.user,
             ).exists()
+        )
+        self.assertRedirects(
+            response,
+            reverse('posts:post_detail', kwargs={'post_id': self.post.id})
         )
 
     def test_guest_user_cant_publish_post(self):
@@ -178,19 +177,14 @@ class PostCreateFormTests(TestCase):
             data=form,
             follow=True,
         )
-        self.assertIn('form', response.context)
-        last_comment = response.context['comments'][0]
-        self.assertEqual(Comment.objects.count(), comment_count + 1)
-        self.assertTrue(Comment.objects.filter(
-            text=form['text'],
-            post=self.post.pk
-        ).exists())
-        self.assertEqual(form['text'], last_comment.text)
         self.assertRedirects(
             response,
             reverse('posts:post_detail', kwargs={'post_id': self.post.pk})
         )
-        response = self.authorized_user.get(
-            reverse('posts:post_detail', kwargs={'post_id': self.post.pk}))
-        last_comment = response.context['comments'][0]
-        self.assertEqual(form['text'], last_comment.text)
+        self.assertEqual(Comment.objects.count(), comment_count + 1)
+        self.assertTrue(Comment.objects.filter(
+            text=form['text'],
+            post=self.post.pk,
+            author=self.user,
+        ).exists()
+        )

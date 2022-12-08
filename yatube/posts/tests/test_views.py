@@ -32,7 +32,7 @@ class PaginatorViewsTest(TestCase):
             Post(
                 author=cls.user,
                 text=f'Тестовый пост {i}',
-                group=cls.group
+                group=cls.group,
             )
             for i in range(13)
         ])
@@ -105,6 +105,7 @@ class PostsViewsTests(TestCase):
             reverse('posts:post_create'): 'posts/create_post.html',
             reverse('posts:post_edit', kwargs={'post_id': cls.post.id}):
                 'posts/create_post.html',
+            reverse('posts:follow_index'): 'posts/follow.html',
         }
 
     @classmethod
@@ -126,11 +127,11 @@ class PostsViewsTests(TestCase):
                 self.assertTemplateUsed(response, template)
 
     def post_check(self, post):
-        with self.subTest(post=post):
-            self.assertEqual(post.text, self.post.text)
-            self.assertEqual(post.author, self.post.author)
-            self.assertEqual(post.group, self.post.group)
-            self.assertEqual(post.image, self.post.image)
+        """Тест проверяет корректность контекста поста."""
+        self.assertEqual(post.text, self.post.text)
+        self.assertEqual(post.author, self.user)
+        self.assertEqual(post.group, self.group)
+        self.assertEqual(post.image, self.post.image)
 
     def test_index_page_show_correct_context(self):
         """Тест проверяет, что шаблон главной страницы
@@ -155,6 +156,7 @@ class PostsViewsTests(TestCase):
         )
         self.post_check(response.context['page_obj'][0])
         self.assertEqual(response.context['author'], self.user)
+        self.assertFalse(response.context['following'])
 
     def test_post_detail_page_show_correct_context(self):
         """Тест проверяет, что шаблон детали поста
@@ -167,6 +169,12 @@ class PostsViewsTests(TestCase):
         )
         post_response = response.context['post']
         self.post_check(post_response)
+        form_fields = {
+            'text': forms.fields.CharField,
+        }
+        for value, expected in form_fields.items():
+            form_field = response.context.get('form').fields.get(value)
+        self.assertIsInstance(form_field, expected)
 
     def test_post_create_page_show_correct_context(self):
         """Тест проверяет, что шаблон создания и редактирования поста
@@ -177,7 +185,8 @@ class PostsViewsTests(TestCase):
         )
         form_fields = {
             'text': forms.fields.CharField,
-            'group': forms.fields.ChoiceField
+            'group': forms.fields.ChoiceField,
+            'image': forms.fields.ImageField,
         }
         for value, expected in form_fields.items():
             with self.subTest(value=value):
@@ -218,11 +227,22 @@ class PostsViewsTests(TestCase):
 
     def test_index_cache(self):
         """Кеширование index работает правильно."""
+        post = Post.objects.create(
+            text='Тестовый пост перед сбросом кеша',
+            author=self.user,
+            group=self.group,
+        )
         response = self.authorized_user.get(reverse('posts:index'))
-        context_count = response.context['page_obj'].count
+        context_count = response.context['page_obj']
+        self.assertIn(post, context_count)
         Post.objects.all().delete
-        context_count_delete = response.context['page_obj'].count
-        self.assertEqual(context_count, context_count_delete)
+        response_delete = self.authorized_user.get(reverse('posts:index'))
+        context_count_delete = response_delete.context['page_obj']
+        self.assertIn(post, context_count_delete)
+        cache.clear()
+        response_end = self.authorized_user.get(reverse('posts:index'))
+        context_count_end = response_end.context['page_obj']
+        self.assertNotEqual(post, context_count_end)
 
 
 class FollowPagesTests(TestCase):
@@ -245,9 +265,9 @@ class FollowPagesTests(TestCase):
         self.follower_user.force_login(FollowPagesTests.follower)
         self.not_follower_user.force_login(FollowPagesTests.not_follower)
 
-    def test_authorized_can_follow_and_unfollow(self):
+    def test_authorized_can_follow(self):
         """Авторизованный пользователь может подписываться
-        на других пользователей и удалять их из подписок.
+        на других пользователей.
         """
         self.follower_user.get(
             reverse(
@@ -261,6 +281,11 @@ class FollowPagesTests(TestCase):
                 user=FollowPagesTests.follower
             ).exists()
         )
+
+    def test_authorized_can_unfollow(self):
+        """Авторизованный пользователь может
+        других пользователей удалять их из подписок.
+        """
         self.follower_user.get(
             reverse(
                 'posts:profile_unfollow',
@@ -274,9 +299,9 @@ class FollowPagesTests(TestCase):
             ).exists()
         )
 
-    def test_new_post_appears_only_in_followers_list(self):
+    def test_new_post_appears_in_followers_list(self):
         """Новая запись пользователя появляется в ленте тех, кто на него
-        подписан и не появляется в ленте тех, кто не подписан.
+        подписан.
         """
         self.follower_user.get(
             reverse(
@@ -285,12 +310,23 @@ class FollowPagesTests(TestCase):
             )
         )
         response_2 = self.follower_user.get(reverse('posts:follow_index'))
-        response_3 = self.not_follower_user.get(
-            reverse('posts:follow_index')
-        )
         self.assertEqual(
             response_2.context['page_obj']
             .paginator.page(1).object_list.count(), 1
+        )
+
+    def test_new_post_not_appears_in_not_followers_list(self):
+        """Новая запись пользователя не появляется в ленте тех,
+        кто не подписан.
+        """
+        self.follower_user.get(
+            reverse(
+                'posts:profile_follow',
+                kwargs={'username': FollowPagesTests.post.author}
+            )
+        )
+        response_3 = self.not_follower_user.get(
+            reverse('posts:follow_index')
         )
         self.assertEqual(
             response_3.context['page_obj']

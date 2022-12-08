@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import CommentForm, PostForm
-from .models import Comment, Follow, Group, Post
+from .models import Follow, Group, Post
 from .utils import show_post_count_in_page
 
 User = get_user_model()
@@ -45,7 +45,6 @@ def profile(request, username,):
     )
     is_following = (
         request.user.is_authenticated
-        and author != request.user
         and author.following.filter(user=request.user).exists()
     )
     template = 'posts/profile.html'
@@ -60,14 +59,10 @@ def profile(request, username,):
 
 def post_detail(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
-    post_count = Post.objects.filter(author=post.author).count()
     template = 'posts/post_detail.html'
-    form = CommentForm(request.POST or None)
-    comments = Comment.objects.filter(post=post)
+    form = CommentForm()
     context = {
         'post': post,
-        'post_count': post_count,
-        'comments': comments,
         'form': form,
     }
     return render(request, template, context)
@@ -145,13 +140,9 @@ def follow_index(request):
 
 @login_required
 def profile_follow(request, username):
-    post_author = get_object_or_404(User, username=username)
-    follow = (Follow.objects.filter(
-        user=request.user,
-        author=post_author
-    ).exists())
-    if request.user != post_author and not follow:
-        Follow.objects.create(user=request.user, author=post_author)
+    author = get_object_or_404(User, username=username)
+    if request.user != author:
+        Follow.objects.get_or_create(user=request.user, author=author)
     return redirect("posts:profile", username=username)
 
 

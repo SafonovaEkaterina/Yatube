@@ -37,7 +37,7 @@ class Post(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name="posts",
-        verbose_name="Автор"
+        verbose_name="Автор",
     )
     group = models.ForeignKey(
         Group,
@@ -51,7 +51,8 @@ class Post(models.Model):
     image = models.ImageField(
         'Картинка',
         upload_to='posts/',
-        blank=True
+        blank=True,
+        null=True,
     )
 
     def __str__(self):
@@ -66,17 +67,17 @@ class Post(models.Model):
 class Comment(models.Model):
     post = models.ForeignKey(
         Post,
-        null=True,
         on_delete=models.CASCADE,
         related_name="comments",
         verbose_name="Пост",
+        default=0,
     )
     author = models.ForeignKey(
         User,
-        null=True,
         on_delete=models.CASCADE,
         related_name="comments",
         verbose_name="Автор",
+        default=0,
     )
     text = models.TextField(
         verbose_name="Текст комментария",
@@ -109,6 +110,10 @@ class Follow(models.Model):
     )
 
     class Meta:
+        constraints = [models.UniqueConstraint(
+            fields=('user', 'author'),
+            name="unique pair"
+        )]
         verbose_name = "Подписка"
         verbose_name_plural = "Подписки"
 

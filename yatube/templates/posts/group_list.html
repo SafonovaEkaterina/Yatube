@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% load cache %}
 {% load thumbnail %}
 {% block title %}
   Записи сообщества {{ group.title }}
@@ -10,13 +9,11 @@
     <p>
       {{ group.description|linebreaks }}
     </p>
-    {% cache 20 index_page %}
     {% for post in page_obj %}
-        {% include "includes/article.html" %}
+        {% include "includes/article.html" with show_author_link=True%}
       <div class="border-top my-3"></div>
       {% if not forloop.last %}<hr>{% endif %}
     {% endfor %}
-    {% endcache %}
     {% include 'includes/paginator.html' %}
   </div> 
 {% endblock %}

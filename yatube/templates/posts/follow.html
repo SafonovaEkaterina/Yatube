@@ -6,7 +6,8 @@
     <h1>Посты отслеживаемых авторов</h1>
     {% include 'posts/includes/switcher.html' %}
     {% for post in page_obj %}
-      {% include "includes/article.html" with show_group=True %}
+      {% include "includes/article.html"
+      with show_group=True show_author_link=True%}
       <div class="border-top my-3"></div>
       {% if not forloop.last %}<hr>{% endif %}  
     {% endfor %}

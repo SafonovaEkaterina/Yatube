@@ -50,10 +50,6 @@ class PostsURLTests(TestCase):
                 kwargs={'slug': cls.group.slug}
             ): HTTPStatus.OK,
             reverse(
-                'posts:group_list',
-                kwargs={'slug': 'bad_slug'}
-            ): HTTPStatus.NOT_FOUND,
-            reverse(
                 'posts:profile',
                 kwargs={'username': cls.user.username}
             ): HTTPStatus.OK,
@@ -66,7 +62,6 @@ class PostsURLTests(TestCase):
                 kwargs={'post_id': cls.post.pk}
             ): HTTPStatus.FOUND,
             reverse('posts:post_create'): HTTPStatus.FOUND,
-            '/unexisting_page/': HTTPStatus.NOT_FOUND,
         }
         cls.urls_list_authorized_user = {
             reverse('posts:post_create'): 'posts/create_post.html',
@@ -87,6 +82,7 @@ class PostsURLTests(TestCase):
                 'posts:post_detail',
                 kwargs={'post_id': cls.post.pk}
             ): 'posts/post_detail.html',
+            reverse('posts:follow_index'): 'posts/follow.html',
         }
         cls.urls_list_authorized_user_code = {
             reverse('posts:post_create'): HTTPStatus.OK,
@@ -100,10 +96,6 @@ class PostsURLTests(TestCase):
                 kwargs={'slug': cls.group.slug}
             ): HTTPStatus.OK,
             reverse(
-                'posts:group_list',
-                kwargs={'slug': 'bad_slug'}
-            ): HTTPStatus.NOT_FOUND,
-            reverse(
                 'posts:profile',
                 kwargs={'username': cls.user.username}
             ): HTTPStatus.OK,
@@ -111,7 +103,7 @@ class PostsURLTests(TestCase):
                 'posts:post_detail',
                 kwargs={'post_id': cls.post.pk}
             ): HTTPStatus.OK,
-            '/unexisting_page/': HTTPStatus.NOT_FOUND,
+            reverse('posts:follow_index'): HTTPStatus.OK,
         }
         cls.post_url = reverse(
             'posts:post_detail',
@@ -174,6 +166,7 @@ class PostsURLTests(TestCase):
             reverse('posts:post_create'): '/auth/login/?next=/create/',
             reverse('posts:post_edit', kwargs={'post_id': 1}):
                 '/auth/login/?next=/posts/1/edit/',
+            reverse('posts:follow_index'): '/auth/login/?next=/follow/',
         }
         for address, redirect in urls_redirect_dict.items():
             with self.subTest(address=address):
