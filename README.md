@@ -1,3 +1,30 @@
-# hw05_final
+# Социальная сеть Yatube
 
-[![CI](https://github.com/yandex-praktikum/hw05_final/actions/workflows/python-app.yml/badge.svg?branch=master)](https://github.com/yandex-praktikum/hw05_final/actions/workflows/python-app.yml)
+Проект представляет социальную сеть.
+Позволяет:
+- Писать посты и делать публикации в отдельных группах
+- Оформлять подписки на посты и авторов 
+- Добавлять и удалять записи и комментарии к ним.
+
+## Как запустить проект: 
+- Склонируйте репозиторий:
+```
+git clone https://github.com/SafonovaEkaterina/Yatube.git
+```
+- Установите и активируйте виртуальное окружение:
+```
+python -m venv venv
+source venv/Scripts/activate
+```
+- Установите зависимости из файла requirements.txt:
+```
+pip install -r requirements.txt
+```
+- Примените миграции:
+```
+python manage.py migrate
+```
+- В папке с файлом manage.py выполните команду:
+```
+python manage.py runserver
+```
